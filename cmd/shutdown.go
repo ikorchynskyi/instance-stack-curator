@@ -40,8 +40,11 @@ var shutdownCmd = &cobra.Command{
 			filters = append(
 				filters,
 				ec2types.Filter{
-					Name:   aws.String("instance-state-name"),
-					Values: []string{string(ec2types.InstanceStateNameRunning)},
+					Name: aws.String("instance-state-name"),
+					Values: []string{
+						string(ec2types.InstanceStateNameRunning),
+						string(ec2types.InstanceStateNameStopped),
+					},
 				},
 			)
 
@@ -58,10 +61,10 @@ var shutdownCmd = &cobra.Command{
 			}
 
 			if len(group.InstanceIds) == 0 {
-				pp.Printf("No running instances in instance group %v\n", *group.Name)
+				pp.Printf("No instances in instance group %v\n", *group.Name)
 				continue
 			}
-			pp.Printf("Running instances in instance group %v: %v\n", *group.Name, group.InstanceIds)
+			pp.Printf("Instances in instance group %v: %v\n", *group.Name, group.InstanceIds)
 
 			if err := curator.PrepareInstanceGroupForShutdown(autoscalingClient, group); err != nil {
 				return err
@@ -108,6 +111,7 @@ var shutdownCmd = &cobra.Command{
 			pp.Printf("Instance group %v: shutdown has been completed\n", *group.Name)
 		}
 
+		pp.Printf("Instance stack %v: shutdown has been completed\n", *stack.Name)
 		return nil
 	},
 }

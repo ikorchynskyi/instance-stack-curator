@@ -38,8 +38,11 @@ var startupCmd = &cobra.Command{
 			filters = append(
 				filters,
 				ec2types.Filter{
-					Name:   aws.String("instance-state-name"),
-					Values: []string{string(ec2types.InstanceStateNameStopped)},
+					Name: aws.String("instance-state-name"),
+					Values: []string{
+						string(ec2types.InstanceStateNameRunning),
+						string(ec2types.InstanceStateNameStopped),
+					},
 				},
 			)
 
@@ -56,10 +59,10 @@ var startupCmd = &cobra.Command{
 			}
 
 			if len(group.InstanceIds) == 0 {
-				pp.Printf("No stopped instances in instance group %v\n", *group.Name)
+				pp.Printf("No instances in instance group %v\n", *group.Name)
 				continue
 			}
-			pp.Printf("Stopped instances in instance group %v: %v\n", *group.Name, group.InstanceIds)
+			pp.Printf("Instances in instance group %v: %v\n", *group.Name, group.InstanceIds)
 
 			if output, err := ec2Client.StartInstances(context.TODO(), &ec2.StartInstancesInput{
 				InstanceIds: group.InstanceIds,
@@ -86,6 +89,7 @@ var startupCmd = &cobra.Command{
 			pp.Printf("Instance group %v: startup has been completed\n", *group.Name)
 		}
 
+		pp.Printf("Instance stack %v: startup has been completed\n", *stack.Name)
 		return nil
 	},
 }
