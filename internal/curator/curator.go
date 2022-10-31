@@ -372,7 +372,8 @@ func AutoScalingInstanceInServiceStateRetryable(ctx context.Context, input *auto
 }
 
 func PrepareInstanceGroupForShutdown(autoscalingClient *autoscaling.Client, group types.Group) error {
-	autoScalingInstancesOutput, err := autoscalingClient.DescribeAutoScalingInstances(context.TODO(), &autoscaling.DescribeAutoScalingInstancesInput{
+	ctx := context.TODO()
+	autoScalingInstancesOutput, err := autoscalingClient.DescribeAutoScalingInstances(ctx, &autoscaling.DescribeAutoScalingInstancesInput{
 		InstanceIds: group.InstanceIds,
 	})
 	if err != nil {
@@ -398,7 +399,7 @@ func PrepareInstanceGroupForShutdown(autoscalingClient *autoscaling.Client, grou
 	}
 	pp.Printf("Auto Scaling Groups in instance group %v: %v\n", *group.Name, asgNames)
 
-	describeAutoScalingGroupsOutput, err := autoscalingClient.DescribeAutoScalingGroups(context.TODO(), &autoscaling.DescribeAutoScalingGroupsInput{
+	describeAutoScalingGroupsOutput, err := autoscalingClient.DescribeAutoScalingGroups(ctx, &autoscaling.DescribeAutoScalingGroupsInput{
 		AutoScalingGroupNames: asgNames,
 	})
 	if err != nil {
@@ -418,7 +419,7 @@ func PrepareInstanceGroupForShutdown(autoscalingClient *autoscaling.Client, grou
 			if minSize < 0 {
 				minSize = 0
 			}
-			_, err := autoscalingClient.UpdateAutoScalingGroup(context.TODO(), &autoscaling.UpdateAutoScalingGroupInput{
+			_, err := autoscalingClient.UpdateAutoScalingGroup(ctx, &autoscaling.UpdateAutoScalingGroupInput{
 				AutoScalingGroupName: g.AutoScalingGroupName,
 				MinSize:              aws.Int32(minSize),
 			})
@@ -427,7 +428,7 @@ func PrepareInstanceGroupForShutdown(autoscalingClient *autoscaling.Client, grou
 			}
 		}
 
-		enterStandbyOutput, err := autoscalingClient.EnterStandby(context.TODO(), &autoscaling.EnterStandbyInput{
+		enterStandbyOutput, err := autoscalingClient.EnterStandby(ctx, &autoscaling.EnterStandbyInput{
 			AutoScalingGroupName:           g.AutoScalingGroupName,
 			InstanceIds:                    instanceIds,
 			ShouldDecrementDesiredCapacity: aws.Bool(true),
@@ -448,7 +449,7 @@ func PrepareInstanceGroupForShutdown(autoscalingClient *autoscaling.Client, grou
 		o.MaxDelay = time.Minute
 	})
 
-	if output, err := standbyWaiter.WaitForOutput(context.TODO(), &autoscaling.DescribeAutoScalingInstancesInput{
+	if output, err := standbyWaiter.WaitForOutput(ctx, &autoscaling.DescribeAutoScalingInstancesInput{
 		InstanceIds: waitForInstanceIds,
 	}, DefaultWaitDuration); err != nil {
 		return err
@@ -460,7 +461,8 @@ func PrepareInstanceGroupForShutdown(autoscalingClient *autoscaling.Client, grou
 }
 
 func PrepareInstanceGroupForStartup(autoscalingClient *autoscaling.Client, group types.Group) error {
-	autoScalingInstancesOutput, err := autoscalingClient.DescribeAutoScalingInstances(context.TODO(), &autoscaling.DescribeAutoScalingInstancesInput{
+	ctx := context.TODO()
+	autoScalingInstancesOutput, err := autoscalingClient.DescribeAutoScalingInstances(ctx, &autoscaling.DescribeAutoScalingInstancesInput{
 		InstanceIds: group.InstanceIds,
 	})
 	if err != nil {
@@ -486,7 +488,7 @@ func PrepareInstanceGroupForStartup(autoscalingClient *autoscaling.Client, group
 	}
 	pp.Printf("Auto Scaling Groups in instance group %v: %v\n", *group.Name, asgNames)
 
-	describeAutoScalingGroupsOutput, err := autoscalingClient.DescribeAutoScalingGroups(context.TODO(), &autoscaling.DescribeAutoScalingGroupsInput{
+	describeAutoScalingGroupsOutput, err := autoscalingClient.DescribeAutoScalingGroups(ctx, &autoscaling.DescribeAutoScalingGroupsInput{
 		AutoScalingGroupNames: asgNames,
 	})
 	if err != nil {
@@ -502,7 +504,7 @@ func PrepareInstanceGroupForStartup(autoscalingClient *autoscaling.Client, group
 
 		// Update ASG(s) MaxSize before a returning an instance to service
 		if maxSize := int32(len(g.Instances)); *g.MaxSize < maxSize {
-			_, err := autoscalingClient.UpdateAutoScalingGroup(context.TODO(), &autoscaling.UpdateAutoScalingGroupInput{
+			_, err := autoscalingClient.UpdateAutoScalingGroup(ctx, &autoscaling.UpdateAutoScalingGroupInput{
 				AutoScalingGroupName: g.AutoScalingGroupName,
 				MaxSize:              aws.Int32(maxSize),
 			})
@@ -511,7 +513,7 @@ func PrepareInstanceGroupForStartup(autoscalingClient *autoscaling.Client, group
 			}
 		}
 
-		exitStandbyOutput, err := autoscalingClient.ExitStandby(context.TODO(), &autoscaling.ExitStandbyInput{
+		exitStandbyOutput, err := autoscalingClient.ExitStandby(ctx, &autoscaling.ExitStandbyInput{
 			AutoScalingGroupName: g.AutoScalingGroupName,
 			InstanceIds:          instanceIds,
 		})
@@ -531,7 +533,7 @@ func PrepareInstanceGroupForStartup(autoscalingClient *autoscaling.Client, group
 		o.MaxDelay = time.Minute
 	})
 
-	if output, err := inServiceWaiter.WaitForOutput(context.TODO(), &autoscaling.DescribeAutoScalingInstancesInput{
+	if output, err := inServiceWaiter.WaitForOutput(ctx, &autoscaling.DescribeAutoScalingInstancesInput{
 		InstanceIds: waitForInstanceIds,
 	}, DefaultWaitDuration); err != nil {
 		return err
@@ -551,7 +553,7 @@ func PrepareInstanceGroupForStartup(autoscalingClient *autoscaling.Client, group
 			continue
 		}
 
-		_, err := autoscalingClient.UpdateAutoScalingGroup(context.TODO(), &autoscaling.UpdateAutoScalingGroupInput{
+		_, err := autoscalingClient.UpdateAutoScalingGroup(ctx, &autoscaling.UpdateAutoScalingGroupInput{
 			AutoScalingGroupName: g.AutoScalingGroupName,
 			MinSize:              aws.Int32(minSize),
 		})

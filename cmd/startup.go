@@ -24,6 +24,7 @@ var startupCmd = &cobra.Command{
 			return err
 		}
 
+		ctx := context.TODO()
 		cfg, err := initAWS()
 		if err != nil {
 			return err
@@ -46,7 +47,7 @@ var startupCmd = &cobra.Command{
 				},
 			)
 
-			if output, err := ec2Client.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{
+			if output, err := ec2Client.DescribeInstances(ctx, &ec2.DescribeInstancesInput{
 				Filters: filters,
 			}); err != nil {
 				return err
@@ -64,7 +65,7 @@ var startupCmd = &cobra.Command{
 			}
 			pp.Printf("Instances in instance group %v: %v\n", *group.Name, group.InstanceIds)
 
-			if output, err := ec2Client.StartInstances(context.TODO(), &ec2.StartInstancesInput{
+			if output, err := ec2Client.StartInstances(ctx, &ec2.StartInstancesInput{
 				InstanceIds: group.InstanceIds,
 			}); err != nil {
 				return err
@@ -76,7 +77,7 @@ var startupCmd = &cobra.Command{
 				o.LogWaitAttempts = true
 				o.MaxDelay = time.Minute
 			})
-			if output, err := waiter.WaitForOutput(context.TODO(), &ec2.DescribeInstanceStatusInput{
+			if output, err := waiter.WaitForOutput(ctx, &ec2.DescribeInstanceStatusInput{
 				InstanceIds: group.InstanceIds,
 			}, curator.DefaultWaitDuration); err != nil {
 				return err

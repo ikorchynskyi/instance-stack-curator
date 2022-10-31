@@ -26,6 +26,7 @@ var shutdownCmd = &cobra.Command{
 			return err
 		}
 
+		ctx := context.TODO()
 		cfg, err := initAWS()
 		if err != nil {
 			return err
@@ -48,7 +49,7 @@ var shutdownCmd = &cobra.Command{
 				},
 			)
 
-			if output, err := ec2Client.DescribeInstances(context.TODO(), &ec2.DescribeInstancesInput{
+			if output, err := ec2Client.DescribeInstances(ctx, &ec2.DescribeInstancesInput{
 				Filters: filters,
 			}); err != nil {
 				return err
@@ -70,7 +71,7 @@ var shutdownCmd = &cobra.Command{
 				return err
 			}
 
-			if output, err := ec2Client.StopInstances(context.TODO(), &ec2.StopInstancesInput{
+			if output, err := ec2Client.StopInstances(ctx, &ec2.StopInstancesInput{
 				InstanceIds: group.InstanceIds,
 			}); err != nil {
 				return err
@@ -82,7 +83,7 @@ var shutdownCmd = &cobra.Command{
 				o.LogWaitAttempts = true
 				o.MaxDelay = time.Minute
 			})
-			if output, err := waiter.WaitForOutput(context.TODO(), &ec2.DescribeInstancesInput{
+			if output, err := waiter.WaitForOutput(ctx, &ec2.DescribeInstancesInput{
 				InstanceIds: group.InstanceIds,
 			}, curator.DefaultWaitDuration); err != nil {
 				return err
