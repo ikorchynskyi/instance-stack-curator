@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/autoscaling"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
-	ec2types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	ec2Types "github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/jmespath/go-jmespath"
 
 	"github.com/ikorchynskyi/instance-stack-curator/internal/curator"
@@ -39,11 +39,11 @@ var shutdownCmd = &cobra.Command{
 			filters := append(stack.Filters, group.Filters...)
 			filters = append(
 				filters,
-				ec2types.Filter{
+				ec2Types.Filter{
 					Name: aws.String("instance-state-name"),
 					Values: []string{
-						string(ec2types.InstanceStateNameRunning),
-						string(ec2types.InstanceStateNameStopped),
+						string(ec2Types.InstanceStateNameRunning),
+						string(ec2Types.InstanceStateNameStopped),
 					},
 				},
 			)

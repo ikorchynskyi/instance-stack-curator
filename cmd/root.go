@@ -7,16 +7,18 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
+	"github.com/aws/aws-sdk-go-v2/service/sts"
+	"github.com/google/uuid"
 	"github.com/k0kubun/pp/v3"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 	"gopkg.in/yaml.v2"
 
+	"github.com/ikorchynskyi/instance-stack-curator/internal/curator"
 	"github.com/ikorchynskyi/instance-stack-curator/internal/types"
 	"github.com/ikorchynskyi/instance-stack-curator/internal/validator"
 )
-
-const ()
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -87,9 +89,45 @@ func initAWS() (aws.Config, error) {
 		clientLogMode = 0
 	}
 
+	var region string
+	if stack.Region != nil {
+		region = *stack.Region
+	}
+
+	ctx := context.TODO()
 	cfg, err := config.LoadDefaultConfig(
-		context.TODO(),
+		ctx,
+		config.WithRegion(region),
 		config.WithClientLogMode(clientLogMode),
 	)
+	if err != nil {
+		return cfg, err
+	}
+
+	if stack.RoleARN != nil {
+		stsClient := sts.NewFromConfig(cfg)
+		credentialsCache := aws.NewCredentialsCache(
+			stscreds.NewAssumeRoleProvider(
+				stsClient,
+				*stack.RoleARN,
+				func(options *stscreds.AssumeRoleOptions) {
+					options.RoleSessionName = "instance-stack-curator-" + uuid.NewString()
+					options.Duration = 2 * curator.DefaultWaitDuration
+				},
+			),
+			func(options *aws.CredentialsCacheOptions) {
+				options.ExpiryWindow = curator.DefaultWaitDuration
+			},
+		)
+		if _, err = credentialsCache.Retrieve(ctx); err != nil {
+			return cfg, err
+		}
+		cfg, err = config.LoadDefaultConfig(
+			ctx,
+			config.WithRegion(cfg.Region),
+			config.WithCredentialsProvider(credentialsCache),
+		)
+	}
+
 	return cfg, err
 }

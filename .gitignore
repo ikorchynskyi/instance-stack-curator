@@ -22,6 +22,3 @@ go.work
 
 # Built binary
 instance-stack-curator
-
-# Stack specs
-filespecs/
