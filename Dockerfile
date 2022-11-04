@@ -1,8 +1,6 @@
 FROM golang:alpine AS builder
 
-# Git is required for fetching the dependencies.
-RUN apk update && apk add --no-cache git
-WORKDIR "$GOPATH/src/instance-stack-curator"
+RUN apk update && apk add --no-cache ca-certificates git
 
 # Fetch dependencies
 COPY go.mod go.sum ./
@@ -18,4 +16,6 @@ RUN go build -ldflags="-w -s" -o "$GOPATH/bin/instance-stack-curator"
 
 FROM scratch
 COPY --from=builder /go/bin/instance-stack-curator /instance-stack-curator
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 ENTRYPOINT [ "/instance-stack-curator" ]
+CMD [ "--help" ]
