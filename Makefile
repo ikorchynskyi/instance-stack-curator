@@ -1,5 +1,5 @@
 clean:
-	rm instance-stack-curator
+	rm -f instance-stack-curator
 
 build:
 	go build -ldflags='-s -w' -o instance-stack-curator main.go

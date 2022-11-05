@@ -13,7 +13,7 @@ type Group struct {
 	Filters []ec2Types.Filter `validate:"required,gt=0,dive,required"`
 
 	// Group instance IDs.
-	InstanceIds []string `yaml:"-"`
+	Instances []ec2Types.Instance `yaml:"-"`
 }
 
 // Instance Stack configuration

@@ -53,24 +53,22 @@ var startupCmd = &cobra.Command{
 				return err
 			} else {
 				for _, r := range output.Reservations {
-					for _, i := range r.Instances {
-						group.InstanceIds = append(group.InstanceIds, *i.InstanceId)
-					}
+					group.Instances = append(group.Instances, r.Instances...)
 				}
 			}
 
-			if len(group.InstanceIds) == 0 {
+			if len(group.Instances) == 0 {
 				pp.Printf("No instances in instance group %v\n", *group.Name)
 				continue
 			}
-			pp.Printf("Instances in instance group %v: %v\n", *group.Name, group.InstanceIds)
 
+			instanceIds := getGroupInstanceIds(&group)
 			if dryRun {
 				continue
 			}
 
 			if output, err := ec2Client.StartInstances(ctx, &ec2.StartInstancesInput{
-				InstanceIds: group.InstanceIds,
+				InstanceIds: instanceIds,
 			}); err != nil {
 				return err
 			} else {
@@ -82,7 +80,7 @@ var startupCmd = &cobra.Command{
 				o.MaxDelay = time.Minute
 			})
 			if output, err := waiter.WaitForOutput(ctx, &ec2.DescribeInstanceStatusInput{
-				InstanceIds: group.InstanceIds,
+				InstanceIds: instanceIds,
 			}, curator.DefaultWaitDuration); err != nil {
 				return err
 			} else {
@@ -101,4 +99,7 @@ var startupCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(startupCmd)
+
+	// Local flags which will only run when this command is called directly
+	startupCmd.PersistentFlags().BoolVar(&dryRun, "dry-run", false, "Set to true to disable actual instance changes")
 }

@@ -11,10 +11,13 @@ require (
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/jmespath/go-jmespath v0.4.0
 	github.com/k0kubun/pp/v3 v3.2.0
+	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.6.1
 	golang.org/x/term v0.1.0
 	gopkg.in/yaml.v2 v2.4.0
 )
+
+require github.com/mattn/go-runewidth v0.0.9 // indirect
 
 require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.12.23

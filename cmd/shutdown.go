@@ -55,18 +55,16 @@ var shutdownCmd = &cobra.Command{
 				return err
 			} else {
 				for _, r := range output.Reservations {
-					for _, i := range r.Instances {
-						group.InstanceIds = append(group.InstanceIds, *i.InstanceId)
-					}
+					group.Instances = append(group.Instances, r.Instances...)
 				}
 			}
 
-			if len(group.InstanceIds) == 0 {
+			if len(group.Instances) == 0 {
 				pp.Printf("No instances in instance group %v\n", *group.Name)
 				continue
 			}
-			pp.Printf("Instances in instance group %v: %v\n", *group.Name, group.InstanceIds)
 
+			instanceIds := getGroupInstanceIds(&group)
 			if dryRun {
 				continue
 			}
@@ -76,7 +74,7 @@ var shutdownCmd = &cobra.Command{
 			}
 
 			if output, err := ec2Client.StopInstances(ctx, &ec2.StopInstancesInput{
-				InstanceIds: group.InstanceIds,
+				InstanceIds: instanceIds,
 			}); err != nil {
 				return err
 			} else {
@@ -88,7 +86,7 @@ var shutdownCmd = &cobra.Command{
 				o.MaxDelay = time.Minute
 			})
 			if output, err := waiter.WaitForOutput(ctx, &ec2.DescribeInstancesInput{
-				InstanceIds: group.InstanceIds,
+				InstanceIds: instanceIds,
 			}, curator.DefaultWaitDuration); err != nil {
 				return err
 			} else {

@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/google/uuid"
 	"github.com/k0kubun/pp/v3"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 	"gopkg.in/yaml.v2"
@@ -130,4 +131,45 @@ func initAWS() (aws.Config, error) {
 	}
 
 	return cfg, err
+}
+
+func getGroupInstanceIds(group *types.Group) []string {
+	instanceIds := make([]string, 0, len(group.Instances))
+	tableData := make([][]string, 0, 1+len(group.Instances))
+	for _, i := range group.Instances {
+		instanceIds = append(instanceIds, *i.InstanceId)
+		var instanceName string
+		for _, t := range i.Tags {
+			if *t.Key == "Name" {
+				instanceName = *t.Value
+				break
+			}
+		}
+		tableData = append(tableData, []string{
+			*group.Name,
+			*i.InstanceId,
+			instanceName,
+			*i.PrivateIpAddress,
+			string(i.State.Name),
+		})
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Group", "Instance ID", "Name", "Private IP", "State"})
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAutoMergeCellsByColumnIndex([]int{0})
+	if term.IsTerminal(int(os.Stdout.Fd())) {
+		table.SetColumnColor(
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgRedColor},
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgYellowColor},
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgGreenColor},
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgGreenColor},
+			tablewriter.Colors{tablewriter.Normal, tablewriter.FgGreenColor},
+		)
+	}
+
+	table.AppendBulk(tableData)
+	table.Render()
+
+	return instanceIds
 }
