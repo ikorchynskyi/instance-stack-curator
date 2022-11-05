@@ -31,7 +31,10 @@ var startupCmd = &cobra.Command{
 		}
 
 		ec2Client := ec2.NewFromConfig(cfg)
-		autoscalingClient := autoscaling.NewFromConfig(cfg)
+		var autoscalingClient *autoscaling.Client
+		if !dryRun {
+			autoscalingClient = autoscaling.NewFromConfig(cfg)
+		}
 
 		for i := range stack.Groups {
 			group := stack.Groups[len(stack.Groups)-1-i]
