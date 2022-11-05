@@ -30,7 +30,7 @@ It allows to execute startup and shutdown of groups of EC2 instances in a predic
 	`,
 }
 
-var debug bool
+var debug, dryRun bool
 var stack types.Stack
 var stackFile string
 

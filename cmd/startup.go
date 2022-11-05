@@ -65,6 +65,10 @@ var startupCmd = &cobra.Command{
 			}
 			pp.Printf("Instances in instance group %v: %v\n", *group.Name, group.InstanceIds)
 
+			if dryRun {
+				continue
+			}
+
 			if output, err := ec2Client.StartInstances(ctx, &ec2.StartInstancesInput{
 				InstanceIds: group.InstanceIds,
 			}); err != nil {
@@ -85,7 +89,7 @@ var startupCmd = &cobra.Command{
 				pp.Printf("Instance statuses in instance group %v: %v\n", *group.Name, output.InstanceStatuses)
 			}
 
-			curator.PrepareInstanceGroupForStartup(autoscalingClient, group)
+			curator.PrepareInstanceGroupForStartup(ctx, autoscalingClient, group)
 
 			pp.Printf("Instance group %v: startup has been completed\n", *group.Name)
 		}

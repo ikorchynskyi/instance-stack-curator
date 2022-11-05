@@ -371,8 +371,7 @@ func AutoScalingInstanceInServiceStateRetryable(ctx context.Context, input *auto
 	return true, nil
 }
 
-func PrepareInstanceGroupForShutdown(autoscalingClient *autoscaling.Client, group types.Group) error {
-	ctx := context.TODO()
+func PrepareInstanceGroupForShutdown(ctx context.Context, autoscalingClient *autoscaling.Client, group types.Group) error {
 	autoScalingInstancesOutput, err := autoscalingClient.DescribeAutoScalingInstances(ctx, &autoscaling.DescribeAutoScalingInstancesInput{
 		InstanceIds: group.InstanceIds,
 	})
@@ -460,8 +459,7 @@ func PrepareInstanceGroupForShutdown(autoscalingClient *autoscaling.Client, grou
 	return nil
 }
 
-func PrepareInstanceGroupForStartup(autoscalingClient *autoscaling.Client, group types.Group) error {
-	ctx := context.TODO()
+func PrepareInstanceGroupForStartup(ctx context.Context, autoscalingClient *autoscaling.Client, group types.Group) error {
 	autoScalingInstancesOutput, err := autoscalingClient.DescribeAutoScalingInstances(ctx, &autoscaling.DescribeAutoScalingInstancesInput{
 		InstanceIds: group.InstanceIds,
 	})

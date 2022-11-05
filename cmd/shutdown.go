@@ -67,7 +67,11 @@ var shutdownCmd = &cobra.Command{
 			}
 			pp.Printf("Instances in instance group %v: %v\n", *group.Name, group.InstanceIds)
 
-			if err := curator.PrepareInstanceGroupForShutdown(autoscalingClient, group); err != nil {
+			if dryRun {
+				continue
+			}
+
+			if err := curator.PrepareInstanceGroupForShutdown(ctx, autoscalingClient, group); err != nil {
 				return err
 			}
 
@@ -119,4 +123,7 @@ var shutdownCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(shutdownCmd)
+
+	// Local flags which will only run when this command is called directly
+	shutdownCmd.PersistentFlags().BoolVar(&dryRun, "dry-run", false, "Set to true to disable actual instance changes")
 }
