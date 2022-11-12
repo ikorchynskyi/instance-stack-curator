@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -62,7 +61,7 @@ func init() {
 }
 
 func initStack() error {
-	stackYaml, err := ioutil.ReadFile(stackFile)
+	stackYaml, err := os.ReadFile(stackFile)
 	if err != nil {
 		return err
 	}

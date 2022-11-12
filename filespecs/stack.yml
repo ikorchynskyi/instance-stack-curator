@@ -1,0 +1,21 @@
+name: ls
+filters:
+  - name: tag-key
+    values:
+      - aws:autoscaling:groupName
+groups:
+  - name: frontend-group
+    filters:
+      - name: tag:instance-group
+        values:
+          - frontend
+  - name: middleware-group
+    filters:
+      - name: tag:instance-group
+        values:
+          - middleware
+  - name: backend-group
+    filters:
+      - name: tag:instance-group
+        values:
+          - backend
