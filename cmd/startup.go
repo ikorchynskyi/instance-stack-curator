@@ -90,7 +90,9 @@ var startupCmd = &cobra.Command{
 				pp.Printf("Instance statuses in instance group %v: %v\n", *group.Name, output.InstanceStatuses)
 			}
 
-			curator.PrepareInstanceGroupForStartup(ctx, autoscalingClient, group)
+			if err := curator.PrepareInstanceGroupForStartup(ctx, autoscalingClient, group); err != nil {
+				return err
+			}
 
 			pp.Printf("Instance group %v: startup has been completed\n", *group.Name)
 		}
